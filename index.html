@@ -4,132 +4,421 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chain of Thoughts - Méthode COT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f8f9fa;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            line-height: 1.6;
         }
+
         .container {
+            max-width: 1100px;
+            margin: 0 auto;
             background: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 24px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.6s ease-out;
         }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .header {
             text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 3px solid #007acc;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 3px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        linear-gradient(90deg, #667eea, #764ba2) border-box;
+            border-bottom: 3px solid;
         }
+
         .header h1 {
-            color: #007acc;
-            margin: 0;
-            font-size: 2.2em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0 0 10px 0;
+            font-size: 3em;
+            font-weight: 800;
+            letter-spacing: -1px;
         }
-        .header p {
-            color: #666;
-            margin: 5px 0 0 0;
-            font-size: 1.1em;
+
+        .header .subtitle {
+            color: #6b7280;
+            font-size: 1.3em;
+            font-weight: 500;
         }
+
         .section {
-            margin: 25px 0;
+            margin: 40px 0;
+            animation: fadeIn 0.8s ease-out;
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         .section-title {
-            background: #007acc;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 1.1em;
-            margin-bottom: 15px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
+
+        .section-title:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .section-title .icon {
+            font-size: 1.4em;
+        }
+
+        .principle-box {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%);
+            border-left: 5px solid #667eea;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 15px 0;
+        }
+
+        .principle-box p {
+            margin: 10px 0;
+            font-size: 1.05em;
+        }
+
+        .principle-box strong {
+            color: #667eea;
+            font-weight: 700;
+        }
+
         .comparison {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin: 20px 0;
+            gap: 25px;
+            margin: 25px 0;
         }
+
         .prompt-box {
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            background: #f8f9fa;
+            border: 3px solid;
+            border-radius: 16px;
+            padding: 25px;
+            background: white;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
+
+        .prompt-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            transition: height 0.3s ease;
+        }
+
+        .prompt-box:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+
         .prompt-box.without {
-            border-color: #ff6b6b;
+            border-color: #ef4444;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
         }
+
+        .prompt-box.without::before {
+            background: #ef4444;
+        }
+
+        .prompt-box.without:hover::before {
+            height: 8px;
+        }
+
         .prompt-box.with {
-            border-color: #51cf66;
+            border-color: #10b981;
+            background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%);
         }
+
+        .prompt-box.with::before {
+            background: #10b981;
+        }
+
+        .prompt-box.with:hover::before {
+            height: 8px;
+        }
+
         .prompt-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #333;
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+
         .prompt-box.without .prompt-title {
-            color: #ff6b6b;
+            color: #dc2626;
         }
+
         .prompt-box.with .prompt-title {
-            color: #51cf66;
+            color: #059669;
         }
-        .steps {
-            background: #e3f2fd;
+
+        .prompt-content {
+            background: white;
+            padding: 15px;
             border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
+            margin: 10px 0;
+            font-size: 0.95em;
+            line-height: 1.6;
         }
+
+        .prompt-result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            font-style: italic;
+            font-size: 0.9em;
+        }
+
+        .prompt-box.without .prompt-result {
+            background: rgba(239, 68, 68, 0.1);
+            color: #991b1b;
+        }
+
+        .prompt-box.with .prompt-result {
+            background: rgba(16, 185, 129, 0.1);
+            color: #065f46;
+        }
+
+        .steps {
+            background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 25px 0;
+        }
+
         .step {
             display: flex;
             align-items: center;
-            margin: 10px 0;
-            padding: 10px;
+            margin: 15px 0;
+            padding: 18px;
             background: white;
-            border-radius: 6px;
-            border-left: 4px solid #007acc;
+            border-radius: 12px;
+            border-left: 5px solid #8b5cf6;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.1);
         }
+
+        .step:hover {
+            transform: translateX(8px);
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2);
+        }
+
         .step-number {
-            background: #007acc;
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
             color: white;
-            width: 30px;
-            height: 30px;
+            min-width: 45px;
+            height: 45px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            margin-right: 15px;
+            font-weight: 700;
+            font-size: 1.2em;
+            margin-right: 20px;
             flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
         }
+
+        .step-text {
+            font-size: 1.05em;
+            color: #374151;
+        }
+
         .formula {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            border-radius: 8px;
-            padding: 20px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 3px solid #f59e0b;
+            border-radius: 16px;
+            padding: 30px;
             text-align: center;
-            font-weight: bold;
-            font-size: 1.1em;
-            color: #856404;
+            font-weight: 600;
+            font-size: 1.15em;
+            color: #92400e;
+            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.2);
+            position: relative;
+            overflow: hidden;
         }
+
+        .formula::before {
+            content: '💡';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 2em;
+            opacity: 0.3;
+        }
+
+        .formula-content {
+            position: relative;
+            z-index: 1;
+        }
+
         .benefits {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
         }
+
         .benefit {
-            background: #e8f5e8;
-            border-radius: 8px;
-            padding: 15px;
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border-radius: 16px;
+            padding: 25px;
             text-align: center;
-            border: 2px solid #51cf66;
+            border: 3px solid #10b981;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
-        .benefit strong {
-            color: #2d6a2d;
+
+        .benefit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .benefit:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 24px rgba(16, 185, 129, 0.3);
+        }
+
+        .benefit:hover::before {
+            left: 100%;
+        }
+
+        .benefit-icon {
+            font-size: 2.5em;
+            margin-bottom: 12px;
             display: block;
-            margin-bottom: 5px;
+        }
+
+        .benefit strong {
+            color: #065f46;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+
+        .benefit-desc {
+            color: #047857;
+            font-size: 0.95em;
+        }
+
+        .example-detail {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 2px solid #e5e7eb;
+        }
+
+        .example-label {
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .example-text {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin: 8px 0;
+            font-size: 0.95em;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            .container {
+                padding: 30px 20px;
+                border-radius: 16px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .header .subtitle {
+                font-size: 1.1em;
+            }
+
+            .comparison {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .section-title {
+                font-size: 1.1em;
+                padding: 12px 16px;
+            }
+
+            .benefits {
+                grid-template-columns: 1fr;
+            }
+
+            .step {
+                padding: 15px;
+            }
+
+            .step-number {
+                min-width: 35px;
+                height: 35px;
+                font-size: 1em;
+            }
         }
     </style>
 </head>
@@ -137,87 +426,150 @@
     <div class="container">
         <div class="header">
             <h1>Chain of Thoughts (COT)</h1>
-            <p>Technique de prompting pour des réponses structurées</p>
+            <p class="subtitle">Technique de prompting pour des réponses structurées et raisonnées</p>
         </div>
 
         <div class="section">
-            <div class="section-title">Principe de base</div>
-            <p><strong>Objectif :</strong> Forcer l'IA à "réfléchir à voix haute" avant de donner sa réponse finale</p>
-            <p><strong>Analogie :</strong> Comme montrer ses calculs en maths au lieu de donner directement le résultat</p>
+            <div class="section-title">
+                <span class="icon">🧠</span>
+                Principe de base
+            </div>
+            <div class="principle-box">
+                <p><strong>Objectif :</strong> Forcer l'IA à "réfléchir à voix haute" avant de donner sa réponse finale, en décomposant le processus de raisonnement en étapes claires et vérifiables.</p>
+                <p><strong>Analogie :</strong> Comme montrer ses calculs en maths au lieu de donner directement le résultat - cela permet de suivre le cheminement de pensée et d'identifier les erreurs potentielles.</p>
+            </div>
         </div>
 
         <div class="section">
-            <div class="section-title">Comparaison pratique</div>
+            <div class="section-title">
+                <span class="icon">⚖️</span>
+                Comparaison pratique
+            </div>
             <div class="comparison">
                 <div class="prompt-box without">
-                    <div class="prompt-title">SANS COT</div>
-                    <p>"Rédige un email de refus pour une candidature à la formation Excel"</p>
-                    <p><em>Résultat : Email générique basique</em></p>
+                    <div class="prompt-title">
+                        ❌ SANS COT
+                    </div>
+                    <div class="prompt-content">
+                        "Rédige un email de refus pour une candidature à la formation Excel"
+                    </div>
+                    <div class="prompt-result">
+                        ⚠️ Résultat : Email générique et basique, manque de personnalisation et de contexte
+                    </div>
                 </div>
                 <div class="prompt-box with">
-                    <div class="prompt-title">AVEC COT</div>
-                    <p>"Rédige un email de refus pour une candidature à la formation Excel. Avant de rédiger, réfléchis étape par étape :</p>
-                    <p>1) Quelles informations inclure ?<br>
-                    2) Quel ton adopter ?<br>
-                    3) Quelles alternatives proposer ?<br>
-                    4) Comment structurer le message ?</p>
-                    <p>Puis rédige l'email en suivant ta réflexion."</p>
-                    <p><em>Résultat : Email personnalisé et structuré</em></p>
+                    <div class="prompt-title">
+                        ✅ AVEC COT
+                    </div>
+                    <div class="prompt-content">
+                        "Rédige un email de refus pour une candidature à la formation Excel. Avant de rédiger, réfléchis étape par étape :<br><br>
+                        1) Quelles informations inclure ?<br>
+                        2) Quel ton adopter ?<br>
+                        3) Quelles alternatives proposer ?<br>
+                        4) Comment structurer le message ?<br><br>
+                        Puis rédige l'email en suivant ta réflexion."
+                    </div>
+                    <div class="prompt-result">
+                        ✨ Résultat : Email personnalisé, structuré et empathique avec des alternatives constructives
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="section">
-            <div class="section-title">Comment l'IA traite le COT</div>
+            <div class="section-title">
+                <span class="icon">⚙️</span>
+                Comment l'IA traite le COT
+            </div>
             <div class="steps">
                 <div class="step">
                     <div class="step-number">1</div>
-                    <div>Décompose la tâche en sous-problèmes</div>
+                    <div class="step-text">Décompose la tâche complexe en sous-problèmes gérables</div>
                 </div>
                 <div class="step">
                     <div class="step-number">2</div>
-                    <div>Établit un ordre logique de traitement</div>
+                    <div class="step-text">Établit un ordre logique et séquentiel de traitement</div>
                 </div>
                 <div class="step">
                     <div class="step-number">3</div>
-                    <div>Résout chaque étape individuellement</div>
+                    <div class="step-text">Résout chaque étape individuellement avec attention</div>
                 </div>
                 <div class="step">
                     <div class="step-number">4</div>
-                    <div>Vérifie la cohérence entre les étapes</div>
+                    <div class="step-text">Vérifie la cohérence et la logique entre les étapes</div>
                 </div>
                 <div class="step">
                     <div class="step-number">5</div>
-                    <div>Synthétise en réponse finale</div>
+                    <div class="step-text">Synthétise toutes les étapes en une réponse finale cohérente</div>
                 </div>
             </div>
         </div>
 
         <div class="section">
-            <div class="section-title">Formule type</div>
+            <div class="section-title">
+                <span class="icon">📋</span>
+                Formule type pour vos prompts
+            </div>
             <div class="formula">
-                [Contexte] + "réfléchis étape par étape :" + [Questions guides] + "Puis" + [Tâche finale]
+                <div class="formula-content">
+                    [Contexte] + "réfléchis étape par étape :" + [Questions guides] + "Puis" + [Tâche finale]
+                </div>
             </div>
         </div>
 
         <div class="section">
-            <div class="section-title">Bénéfices</div>
+            <div class="section-title">
+                <span class="icon">🎯</span>
+                Exemples concrets d'application
+            </div>
+
+            <div class="example-detail">
+                <div class="example-label">📊 Analyse de données</div>
+                <div class="example-text">
+                    <strong>Prompt COT :</strong> "Analyse ces données de vente. Réfléchis étape par étape : 1) Quelles sont les tendances principales ? 2) Y a-t-il des anomalies ? 3) Quels facteurs peuvent expliquer les variations ? 4) Quelles recommandations en tirer ? Puis présente ton analyse complète."
+                </div>
+            </div>
+
+            <div class="example-detail">
+                <div class="example-label">💻 Débogage de code</div>
+                <div class="example-text">
+                    <strong>Prompt COT :</strong> "Ce code produit une erreur. Avant de proposer une solution, réfléchis : 1) Quelle est la nature de l'erreur ? 2) Où se situe-t-elle dans le flux d'exécution ? 3) Quelles sont les causes possibles ? 4) Quelle est la meilleure solution ? Puis explique ta correction."
+                </div>
+            </div>
+
+            <div class="example-detail">
+                <div class="example-label">✍️ Rédaction créative</div>
+                <div class="example-text">
+                    <strong>Prompt COT :</strong> "Écris un article sur l'IA. Réfléchis d'abord : 1) Quel angle choisir ? 2) Quelle structure adopter ? 3) Quels exemples utiliser ? 4) Quel ton pour quelle audience ? Puis rédige l'article complet."
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">
+                <span class="icon">✨</span>
+                Bénéfices de la méthode COT
+            </div>
             <div class="benefits">
                 <div class="benefit">
+                    <span class="benefit-icon">🎯</span>
                     <strong>Précision</strong>
-                    Réponses plus adaptées au contexte
+                    <div class="benefit-desc">Réponses plus adaptées et pertinentes au contexte spécifique</div>
                 </div>
                 <div class="benefit">
+                    <span class="benefit-icon">🔍</span>
                     <strong>Transparence</strong>
-                    Raisonnement visible et vérifiable
+                    <div class="benefit-desc">Raisonnement visible, traçable et facilement vérifiable</div>
                 </div>
                 <div class="benefit">
+                    <span class="benefit-icon">🎛️</span>
                     <strong>Contrôle</strong>
-                    Possibilité de corriger le processus
+                    <div class="benefit-desc">Possibilité d'intervenir et corriger à chaque étape du processus</div>
                 </div>
                 <div class="benefit">
+                    <span class="benefit-icon">⭐</span>
                     <strong>Qualité</strong>
-                    Réduction des erreurs de logique
+                    <div class="benefit-desc">Réduction significative des erreurs de logique et d'incohérences</div>
                 </div>
             </div>
         </div>
